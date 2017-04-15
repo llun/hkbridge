@@ -7,6 +7,7 @@ import (
 	"github.com/brutella/hc/accessory"
 	. "github.com/deckarep/golang-set"
 
+	"github.com/llun/hksensibo"
 	"github.com/llun/hksoundtouch"
 	"github.com/llun/hkwifioccupancy"
 )
@@ -22,7 +23,10 @@ func SetupAccessories(config Config, iface *net.Interface) []*accessory.Accessor
 			if sensorAccessory != nil {
 				hkAccessories = append(hkAccessories, sensorAccessory)
 			}
+		case "github.com/llun/hksensibo":
+			hkAccessories = append(hkAccessories, setupSensibo(accessory, iface)...)
 		}
+
 	}
 	return hkAccessories
 }
@@ -52,4 +56,21 @@ func setupWifiOccupancy(config AccessoryConfig, iface *net.Interface) *accessory
 	}
 	sensor := wifioccupancy.NewSensor(presenceFile, NewSet(macAddresses...))
 	return sensor.Accessory
+}
+
+func setupSensibo(config AccessoryConfig, iface *net.Interface) []*accessory.Accessory {
+	option := config.Option
+
+	key, ok := option["key"].(string)
+	if !ok {
+		log.Println("Cannot read sensibo key")
+		return nil
+	}
+
+	sensibos := sensibo.Lookup(key)
+	sensiboAccessories := make([]*accessory.Accessory, len(sensibos))
+	for idx, sensibo := range sensibos {
+		sensiboAccessories[idx] = sensibo.Accessory
+	}
+	return sensiboAccessories
 }

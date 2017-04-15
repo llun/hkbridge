@@ -26,6 +26,12 @@ Bridge for group all devices under single HC process
           "mac address"
         ]
       }
+    },
+    {
+      "type": "github.com/llun/hksensibo",
+      "option": {
+        "key": "sensibo-api-key"
+      }
     }
   ]
 }
