@@ -67,7 +67,7 @@ func setupSensibo(config AccessoryConfig, iface *net.Interface) []*accessory.Acc
 		return nil
 	}
 
-	sensibos := sensibo.Lookup(key)
+	sensibos := hksensibo.Lookup(key)
 	sensiboAccessories := make([]*accessory.Accessory, len(sensibos))
 	for idx, sensibo := range sensibos {
 		sensiboAccessories[idx] = sensibo.Accessory
