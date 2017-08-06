@@ -37,6 +37,7 @@ func setupSoundtouch(config AccessoryConfig, iface *net.Interface) []*accessory.
 	for idx, speaker := range speakers {
 		soundtouchAccessories[idx] = speaker.Accessory
 	}
+	log.Println("Soundtouchs, %v", soundtouchAccessories)
 	return soundtouchAccessories
 }
 
