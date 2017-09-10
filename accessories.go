@@ -18,7 +18,7 @@ func SetupAccessories(config accessories.Config, iface *net.Interface, worker *a
 	for _, accessory := range config.Accessories {
 		switch accessory.Type {
 		case "github.com/llun/hksoundtouch":
-			hkAccessories = append(hkAccessories, setupSoundtouch(accessory, iface)...)
+			hkAccessories = append(hkAccessories, soundtouch.AllAccessories(accessory, iface, worker)...)
 		case "github.com/llun/hkwifioccupancy":
 			sensorAccessory := setupWifiOccupancy(accessory, iface)
 			if sensorAccessory != nil {
@@ -30,16 +30,6 @@ func SetupAccessories(config accessories.Config, iface *net.Interface, worker *a
 
 	}
 	return hkAccessories
-}
-
-func setupSoundtouch(config accessories.AccessoryConfig, iface *net.Interface) []*accessory.Accessory {
-	speakers := soundtouch.Lookup(iface)
-	soundtouchAccessories := make([]*accessory.Accessory, len(speakers))
-	for idx, speaker := range speakers {
-		soundtouchAccessories[idx] = speaker.Accessory
-	}
-	log.Println("Soundtouchs, %v", soundtouchAccessories)
-	return soundtouchAccessories
 }
 
 func setupWifiOccupancy(config accessories.AccessoryConfig, iface *net.Interface) *accessory.Accessory {
