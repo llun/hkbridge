@@ -7,12 +7,13 @@ import (
 	"github.com/brutella/hc/accessory"
 	. "github.com/deckarep/golang-set"
 
+	"github.com/llun/hkbridge/accessories"
 	"github.com/llun/hksensibo"
 	"github.com/llun/hksoundtouch"
 	"github.com/llun/hkwifioccupancy"
 )
 
-func SetupAccessories(config Config, iface *net.Interface) []*accessory.Accessory {
+func SetupAccessories(config accessories.Config, iface *net.Interface, worker *accessories.Worker) []*accessory.Accessory {
 	hkAccessories := make([]*accessory.Accessory, 0, 10)
 	for _, accessory := range config.Accessories {
 		switch accessory.Type {
@@ -24,14 +25,14 @@ func SetupAccessories(config Config, iface *net.Interface) []*accessory.Accessor
 				hkAccessories = append(hkAccessories, sensorAccessory)
 			}
 		case "github.com/llun/hksensibo":
-			hkAccessories = append(hkAccessories, setupSensibo(accessory, iface)...)
+			hkAccessories = append(hkAccessories, hksensibo.AllAccessories(accessory, iface, worker)...)
 		}
 
 	}
 	return hkAccessories
 }
 
-func setupSoundtouch(config AccessoryConfig, iface *net.Interface) []*accessory.Accessory {
+func setupSoundtouch(config accessories.AccessoryConfig, iface *net.Interface) []*accessory.Accessory {
 	speakers := soundtouch.Lookup(iface)
 	soundtouchAccessories := make([]*accessory.Accessory, len(speakers))
 	for idx, speaker := range speakers {
@@ -41,7 +42,7 @@ func setupSoundtouch(config AccessoryConfig, iface *net.Interface) []*accessory.
 	return soundtouchAccessories
 }
 
-func setupWifiOccupancy(config AccessoryConfig, iface *net.Interface) *accessory.Accessory {
+func setupWifiOccupancy(config accessories.AccessoryConfig, iface *net.Interface) *accessory.Accessory {
 	option := config.Option
 
 	presenceFile, ok := option["file"].(string)
@@ -57,21 +58,4 @@ func setupWifiOccupancy(config AccessoryConfig, iface *net.Interface) *accessory
 	}
 	sensor := wifioccupancy.NewSensor(presenceFile, NewSet(macAddresses...))
 	return sensor.Accessory
-}
-
-func setupSensibo(config AccessoryConfig, iface *net.Interface) []*accessory.Accessory {
-	option := config.Option
-
-	key, ok := option["key"].(string)
-	if !ok {
-		log.Println("Cannot read sensibo key")
-		return nil
-	}
-
-	sensibos := hksensibo.Lookup(key)
-	sensiboAccessories := make([]*accessory.Accessory, len(sensibos))
-	for idx, sensibo := range sensibos {
-		sensiboAccessories[idx] = sensibo.Accessory
-	}
-	return sensiboAccessories
 }

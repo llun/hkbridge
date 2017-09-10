@@ -1,4 +1,4 @@
-package hkbridge
+package accessories
 
 import (
 	"encoding/json"

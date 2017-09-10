@@ -7,13 +7,17 @@ import (
 	"github.com/brutella/hc"
 	"github.com/brutella/hc/accessory"
 	hclog "github.com/brutella/hc/log"
+	"github.com/llun/hkbridge/accessories"
 )
 
 type Bridge struct {
 	*accessory.Accessory
+
+	Worker *accessories.Worker
 }
 
-func NewBridge(config Config) *Bridge {
+func NewBridge(config accessories.Config) *Bridge {
+	worker := accessories.NewWorker()
 	info := accessory.Info{
 		Name:         config.Name,
 		Manufacturer: config.Manufacturer,
@@ -22,12 +26,14 @@ func NewBridge(config Config) *Bridge {
 	}
 	acc := Bridge{
 		Accessory: accessory.New(info, accessory.TypeBridge),
+		Worker:    worker,
 	}
+	go worker.Run()
 	return &acc
 }
 
 func Start() {
-	config, err := ReadConfig("config.json")
+	config, err := accessories.ReadConfig("config.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,8 +55,8 @@ func Start() {
 		hclog.Debug.Enable()
 	}
 
-	accessories := SetupAccessories(config, iface)
 	bridge := NewBridge(config)
+	accessories := SetupAccessories(config, iface, bridge.Worker)
 	t, err := hc.NewIPTransport(hc.Config{
 		Pin:  config.Pin,
 		Port: config.Port,
